@@ -385,10 +385,299 @@ List PenalizedElasticEnergy(NumericMatrix X,
                               Named("RP") = RP,
                               Named("MSE") = MSE);
   
+  return RetList;
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//' Compute the penalized elastic energy associated with a particular configuration 
+//' 
+//' This function computes the elastic energy associate to a set of points and graph embedded
+//' into them. See XXX for reference
+//' 
+//' @param X A numeric n-by-m matrix containing the position of n data points m-dimensional points
+//' @param NodePositions A numeric k-by-m matrix containing the position of the k nodes of the embedded graph
+//' @param ElasticMatrix A numeric l-by-l matrix containing the elastic parameters associates with the edge
+//' of the embedded graph
+//' @param Dists A numeric vector containind the squared distance of the data points to the closest node of the graph
+//' @param alpha 
+//' 
+//' @return A list with four elements:
+//' * ElasticEnergy is the total energy
+//' * EP is the EP component of the energy
+//' * RS is the RS component of the energy
+//' * MSE is the MSE component of the energy
+//' @md
+//' 
+//' @export
+//' 
+//' @examples 
+//' 
+// [[Rcpp::export]]
+List PenalizedElasticEnergy_V2(NumericMatrix X,
+                            NumericMatrix NodePositions,
+                            NumericMatrix ElasticMatrix,
+                            NumericVector Dists,
+                            double alpha) {
+  
+  int k = NodePositions.nrow(),
+    n = NodePositions.ncol();
+  
+  double MSE = sum(Dists)/X.nrow(),
+    EP = 0,
+    TotEnergy = 0;
+  
+  arma::mat dev;
+  
+  arma::mat EM = arma::mat(ElasticMatrix.begin(), k, k, true);
+  arma::mat NP = arma::mat(NodePositions.begin(), k, n, false);
+  arma::vec Mu = EM.diag(0);
+  
+  arma::mat Lambda = trimatu(EM,  1);
+  arma::uvec StarCenterIndices = arma::find(Mu > 0);
+  
+  EM.diag(0).zeros(); 
+  
+  // Rcpp::Rcout << "Lambda" << std::endl;
+  // Rcpp::Rcout << Lambda << std::endl;
+  
+  arma::uvec PosLambdaIdxs = find(Lambda);
+  arma::umat PosLambdaIdxsMat = ind2sub(size(Lambda), PosLambdaIdxs);
+  
+  // Rcpp::Rcout << "PosLambdaIdxsMat" << std::endl;
+  // Rcpp::Rcout << PosLambdaIdxsMat << std::endl;  
+  
+  dev = NP.rows(PosLambdaIdxsMat.row(0)) - NP.rows(PosLambdaIdxsMat.row(1));
+  
+  arma::mat l = Lambda(find(Lambda > 0));
+  
+  // Rcpp::Rcout << "lpenalized" << std::endl;
+  // Rcpp::Rcout << lpenalized << std::endl;
+  
+  arma::mat tEP = l.t() * sum(pow(dev, 2), 1);
+  
+  EP = tEP(0,0);
+  
+  TotEnergy = EP + alpha*MSE;
+  
+  List RetList = List::create(Named("ElasticEnergy") = TotEnergy,
+                              Named("EP") = EP,
+                              Named("RP") = 0,
+                              Named("MSE") = MSE,
+                              Named("alpha") = alpha);
   
   return RetList;
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//' Compute the rebalanced elastic energy associated with a particular configuration 
+//' 
+//' This function computes the elastic energy associate to a set of points and graph embedded
+//' into them. See XXX for reference
+//' 
+//' @param X A numeric n-by-m matrix containing the position of n data points m-dimensional points
+//' @param NodePositions A numeric k-by-m matrix containing the position of the k nodes of the embedded graph
+//' @param ElasticMatrix A numeric l-by-l matrix containing the elastic parameters associates with the edge
+//' of the embedded graph
+//' @param Dists A numeric vector containind the squared distance of the data points to the closest node of the graph
+//' @param alpha a multiplicative constant to controlt the energy associated with distance from the points
+//' @param beta a multiplicative constant to controlt the energy associated with he length of the graph
+//' @param gamma a multiplicative constant to controlt the energy associated with the armonicity
+//' 
+//' @return A list with four elements:
+//' * ElasticEnergy is the total energy
+//' * EP is the EP component of the energy
+//' * RS is the RS component of the energy
+//' * MSE is the MSE component of the energy
+//' @md
+//' 
+//' @export
+//' 
+//' @examples 
+//' 
+// [[Rcpp::export]]
+List RebalancedElasticEnergy(NumericMatrix X,
+                            NumericMatrix NodePositions,
+                            NumericMatrix ElasticMatrix,
+                            NumericVector Dists,
+                            double alpha,
+                            double beta,
+                            double gamma) {
+  
+  int k = NodePositions.nrow(),
+    n = NodePositions.ncol(),
+    i,
+    j;
+  
+  double MSE = sum(Dists)/X.nrow(),
+    EP = 0,
+    RP = 0,
+    BranchCount = 0,
+    TotEnergy = 0;
+  
+  arma::mat dev;
+  
+  arma::mat EM = arma::mat(ElasticMatrix.begin(), k, k, true);
+  arma::mat NP = arma::mat(NodePositions.begin(), k, n, false);
+  arma::vec Mu = EM.diag(0);
+  
+  arma::mat Lambda = trimatu(EM,  1);
+  arma::uvec StarCenterIndices = arma::find(Mu > 0);
+  
+  EM.diag(0).zeros(); 
+  
+  arma::uvec PosLambdaIdxs = find(Lambda);
+  arma::umat PosLambdaIdxsMat = ind2sub(size(Lambda), PosLambdaIdxs);
+  
+  dev = NP.rows(PosLambdaIdxsMat.row(0)) - NP.rows(PosLambdaIdxsMat.row(1));
+  
+  arma::mat l = Lambda(find(Lambda > 0));
+  
+  // Rcpp::Rcout << "lpenalized" << std::endl;
+  // Rcpp::Rcout << lpenalized << std::endl;
+  
+  arma::mat tEP = l.t() * sum(pow(dev, 2), 1);
+  
+  EP = tEP(0,0);
+  
+  // Rcpp::Rcout << EP << std::endl;
+  
+  arma::uvec leafs;
+  // double K = 0;
+  
+  for(i=0; i<StarCenterIndices.size(); i++){
+    
+    leafs = find(EM.col(StarCenterIndices(i)));
+    
+    j = leafs.size();
+    
+    if(j > 2){
+      BranchCount++;
+    }
+    
+    dev = NP.row(StarCenterIndices(i)) - sum(NP.rows(leafs)) / j;
+    
+    RP += Mu(StarCenterIndices(i))*arma::dot(dev,dev);
+    
+  }
+  
+  // TotEnergy = beta*EP + gamma*RP + alpha*MSE;
+  
+  TotEnergy = beta*EP + gamma*BranchCount + alpha*MSE;
+  
+  List RetList = List::create(Named("ElasticEnergy") = TotEnergy,
+                              Named("EP") = EP,
+                              Named("RP") = RP,
+                              Named("MSE") = MSE);
+  
+  
+  return RetList;
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

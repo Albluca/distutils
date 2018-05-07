@@ -18,6 +18,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// PartialDistanceExt
+NumericMatrix PartialDistanceExt(NumericMatrix Ar, NumericMatrix Br, NumericVector SquaredAr);
+RcppExport SEXP _distutils_PartialDistanceExt(SEXP ArSEXP, SEXP BrSEXP, SEXP SquaredArSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Ar(ArSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Br(BrSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type SquaredAr(SquaredArSEXP);
+    rcpp_result_gen = Rcpp::wrap(PartialDistanceExt(Ar, Br, SquaredAr));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Partition
 List Partition(NumericMatrix Ar, NumericMatrix Br, NumericVector SquaredAr);
 RcppExport SEXP _distutils_Partition(SEXP ArSEXP, SEXP BrSEXP, SEXP SquaredArSEXP) {
@@ -75,6 +88,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// PenalizedElasticEnergy_V2
+List PenalizedElasticEnergy_V2(NumericMatrix X, NumericMatrix NodePositions, NumericMatrix ElasticMatrix, NumericVector Dists, double alpha);
+RcppExport SEXP _distutils_PenalizedElasticEnergy_V2(SEXP XSEXP, SEXP NodePositionsSEXP, SEXP ElasticMatrixSEXP, SEXP DistsSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type NodePositions(NodePositionsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type ElasticMatrix(ElasticMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Dists(DistsSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(PenalizedElasticEnergy_V2(X, NodePositions, ElasticMatrix, Dists, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// RebalancedElasticEnergy
+List RebalancedElasticEnergy(NumericMatrix X, NumericMatrix NodePositions, NumericMatrix ElasticMatrix, NumericVector Dists, double alpha, double beta, double gamma);
+RcppExport SEXP _distutils_RebalancedElasticEnergy(SEXP XSEXP, SEXP NodePositionsSEXP, SEXP ElasticMatrixSEXP, SEXP DistsSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP gammaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type NodePositions(NodePositionsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type ElasticMatrix(ElasticMatrixSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Dists(DistsSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    rcpp_result_gen = Rcpp::wrap(RebalancedElasticEnergy(X, NodePositions, ElasticMatrix, Dists, alpha, beta, gamma));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ComputeWeightedAverage
 List ComputeWeightedAverage(NumericMatrix X, IntegerVector partition, NumericVector PointWeights, unsigned int NumberOfNodes);
 RcppExport SEXP _distutils_ComputeWeightedAverage(SEXP XSEXP, SEXP partitionSEXP, SEXP PointWeightsSEXP, SEXP NumberOfNodesSEXP) {
@@ -122,10 +167,13 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_distutils_PartialDistance", (DL_FUNC) &_distutils_PartialDistance, 2},
+    {"_distutils_PartialDistanceExt", (DL_FUNC) &_distutils_PartialDistanceExt, 3},
     {"_distutils_Partition", (DL_FUNC) &_distutils_Partition, 3},
     {"_distutils_ElasticEnergy", (DL_FUNC) &_distutils_ElasticEnergy, 4},
     {"_distutils_ElasticEnergy_V0", (DL_FUNC) &_distutils_ElasticEnergy_V0, 4},
     {"_distutils_PenalizedElasticEnergy", (DL_FUNC) &_distutils_PenalizedElasticEnergy, 6},
+    {"_distutils_PenalizedElasticEnergy_V2", (DL_FUNC) &_distutils_PenalizedElasticEnergy_V2, 5},
+    {"_distutils_RebalancedElasticEnergy", (DL_FUNC) &_distutils_RebalancedElasticEnergy, 7},
     {"_distutils_ComputeWeightedAverage", (DL_FUNC) &_distutils_ComputeWeightedAverage, 4},
     {"_distutils_FitGraph2DataGivenPartition", (DL_FUNC) &_distutils_FitGraph2DataGivenPartition, 6},
     {"_distutils_RadialCount", (DL_FUNC) &_distutils_RadialCount, 4},

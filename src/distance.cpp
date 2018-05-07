@@ -67,6 +67,79 @@ NumericMatrix PartialDistance(NumericMatrix Ar, NumericMatrix Br) {
 
 
 
+
+
+
+
+//' Compute the partial distance between matrices using the sum of squares 
+//' 
+//' This function computes the distance between a matrix of data points and a
+//' matrix of reference points. Both matrices need to have the same number of
+//' dimensions (columns). The code was taked from here: // C++ code taken from here:
+//' https://www.r-bloggers.com/pairwise-distances-in-r/
+//' 
+//' @param Ar A numeric n-by-m matrix containing the position of n data points m-dimensional points
+//' @param Br A numeric k-by-m matrix containing the position of k reference m-dimensional points
+//' @param SquaredAr A numeric vector reporting the sum, by row, of Ar (i.e. SquaredX = rowSums(Ar^2)).
+//' This is done to speed up the calculation when the same set o data points is clustered against
+//' a different set of reference point (e.g. in k-means)
+//' 
+//' @return A numeric n-by-k matrix reporting the euclidean distance between the n data points and 
+//' the k reference points
+//' 
+//' @export
+//' 
+//' @examples 
+//' 
+//' A <- matrix(runif(10000*100), nrow = 10000)
+//' B <- matrix(runif(100*100), nrow = 100)
+//' 
+//' library(distutils)
+//' 
+//' print(system.time(C1 <- PartialDistance(A, B, rowSums(A^2))))
+//' print(system.time(C2 <- as.matrix(dist(rbind(A,B)))[1:10000, 10001:10100]))
+//' 
+//' summary(as.vector(C1 - C2))
+//' 
+//' 
+// [[Rcpp::export]]
+NumericMatrix PartialDistanceExt(NumericMatrix Ar, NumericMatrix Br, NumericVector SquaredAr) {
+  
+  // Get dimension of the matrix
+  int n = Ar.nrow(), 
+    m = Br.nrow(),
+    k = Br.ncol();
+  
+  // Copy matrices to internal structures
+  arma::mat A = arma::mat(Ar.begin(), n, k, false); 
+  arma::mat B = arma::mat(Br.begin(), m, k, false); 
+  
+  arma::colvec An = arma::vec(SquaredAr.begin(), SquaredAr.size(), false);
+  arma::colvec Bn = sum(square(B),1);
+  
+  arma::mat C = -2 * (A * B.t());
+  C.each_col() += An;
+  C.each_row() += Bn.t();
+  
+  C = sqrt(C);
+  
+  // This is needed because if the distance is very close to zero
+  // it may become negative and hence the sqrt is NaN
+  C.replace(arma::datum::nan, 0);
+  
+  return wrap(C); 
+}
+
+
+
+
+
+
+
+
+
+
+
 //' Parition a set of data ponints into groups based on the distance from a set of reference points
 //' 
 //' This function computes the distance between a matrix of data points and a

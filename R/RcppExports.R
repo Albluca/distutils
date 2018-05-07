@@ -33,6 +33,41 @@ PartialDistance <- function(Ar, Br) {
     .Call('_distutils_PartialDistance', PACKAGE = 'distutils', Ar, Br)
 }
 
+#' Compute the partial distance between matrices using the sum of squares 
+#' 
+#' This function computes the distance between a matrix of data points and a
+#' matrix of reference points. Both matrices need to have the same number of
+#' dimensions (columns). The code was taked from here: // C++ code taken from here:
+#' https://www.r-bloggers.com/pairwise-distances-in-r/
+#' 
+#' @param Ar A numeric n-by-m matrix containing the position of n data points m-dimensional points
+#' @param Br A numeric k-by-m matrix containing the position of k reference m-dimensional points
+#' @param SquaredAr A numeric vector reporting the sum, by row, of Ar (i.e. SquaredX = rowSums(Ar^2)).
+#' This is done to speed up the calculation when the same set o data points is clustered against
+#' a different set of reference point (e.g. in k-means)
+#' 
+#' @return A numeric n-by-k matrix reporting the euclidean distance between the n data points and 
+#' the k reference points
+#' 
+#' @export
+#' 
+#' @examples 
+#' 
+#' A <- matrix(runif(10000*100), nrow = 10000)
+#' B <- matrix(runif(100*100), nrow = 100)
+#' 
+#' library(distutils)
+#' 
+#' print(system.time(C1 <- PartialDistance(A, B, rowSums(A^2))))
+#' print(system.time(C2 <- as.matrix(dist(rbind(A,B)))[1:10000, 10001:10100]))
+#' 
+#' summary(as.vector(C1 - C2))
+#' 
+#' 
+PartialDistanceExt <- function(Ar, Br, SquaredAr) {
+    .Call('_distutils_PartialDistanceExt', PACKAGE = 'distutils', Ar, Br, SquaredAr)
+}
+
 #' Parition a set of data ponints into groups based on the distance from a set of reference points
 #' 
 #' This function computes the distance between a matrix of data points and a
@@ -158,6 +193,62 @@ ElasticEnergy_V0 <- function(X, NodePositions, ElasticMatrix, Dists) {
 #' 
 PenalizedElasticEnergy <- function(X, NodePositions, ElasticMatrix, Dists, alpha, beta) {
     .Call('_distutils_PenalizedElasticEnergy', PACKAGE = 'distutils', X, NodePositions, ElasticMatrix, Dists, alpha, beta)
+}
+
+#' Compute the penalized elastic energy associated with a particular configuration 
+#' 
+#' This function computes the elastic energy associate to a set of points and graph embedded
+#' into them. See XXX for reference
+#' 
+#' @param X A numeric n-by-m matrix containing the position of n data points m-dimensional points
+#' @param NodePositions A numeric k-by-m matrix containing the position of the k nodes of the embedded graph
+#' @param ElasticMatrix A numeric l-by-l matrix containing the elastic parameters associates with the edge
+#' of the embedded graph
+#' @param Dists A numeric vector containind the squared distance of the data points to the closest node of the graph
+#' @param alpha 
+#' 
+#' @return A list with four elements:
+#' * ElasticEnergy is the total energy
+#' * EP is the EP component of the energy
+#' * RS is the RS component of the energy
+#' * MSE is the MSE component of the energy
+#' @md
+#' 
+#' @export
+#' 
+#' @examples 
+#' 
+PenalizedElasticEnergy_V2 <- function(X, NodePositions, ElasticMatrix, Dists, alpha) {
+    .Call('_distutils_PenalizedElasticEnergy_V2', PACKAGE = 'distutils', X, NodePositions, ElasticMatrix, Dists, alpha)
+}
+
+#' Compute the rebalanced elastic energy associated with a particular configuration 
+#' 
+#' This function computes the elastic energy associate to a set of points and graph embedded
+#' into them. See XXX for reference
+#' 
+#' @param X A numeric n-by-m matrix containing the position of n data points m-dimensional points
+#' @param NodePositions A numeric k-by-m matrix containing the position of the k nodes of the embedded graph
+#' @param ElasticMatrix A numeric l-by-l matrix containing the elastic parameters associates with the edge
+#' of the embedded graph
+#' @param Dists A numeric vector containind the squared distance of the data points to the closest node of the graph
+#' @param alpha a multiplicative constant to controlt the energy associated with distance from the points
+#' @param beta a multiplicative constant to controlt the energy associated with he length of the graph
+#' @param gamma a multiplicative constant to controlt the energy associated with the armonicity
+#' 
+#' @return A list with four elements:
+#' * ElasticEnergy is the total energy
+#' * EP is the EP component of the energy
+#' * RS is the RS component of the energy
+#' * MSE is the MSE component of the energy
+#' @md
+#' 
+#' @export
+#' 
+#' @examples 
+#' 
+RebalancedElasticEnergy <- function(X, NodePositions, ElasticMatrix, Dists, alpha, beta, gamma) {
+    .Call('_distutils_RebalancedElasticEnergy', PACKAGE = 'distutils', X, NodePositions, ElasticMatrix, Dists, alpha, beta, gamma)
 }
 
 ComputeWeightedAverage <- function(X, partition, PointWeights, NumberOfNodes) {
